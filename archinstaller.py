@@ -6,7 +6,7 @@ def welcome():
     print("Welcome to to the Arch Installer!")
     system_clock_sync = "timedatectl set-ntp true"
     print(f"Running `{system_clock_sync}` command to sync the system clock!")
-    os.system(system_clock_sync)
+    subprocess.run(system_clock_sync, shell=True)
 
 
 def format_disks():
@@ -55,7 +55,7 @@ def set_time_zone():
 
     print(f"Available cities in {continent}:")
     for i, c in enumerate(cities):
-        if i % 5 == 0 and i != 0:
+        if i % 5 == 4 and i != 0:
             print(c)
         else:
             print(c.ljust(10, " "), end="\t")
