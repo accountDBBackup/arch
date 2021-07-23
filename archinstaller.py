@@ -91,7 +91,7 @@ def configure_network():
     print("Editing the `/etc/hosts` file...")
     with open("/etc/hosts", "w+") as hosts:
         hosts.write(
-            "127.0.0.1\tlocalhost\n::1\tlocalhost\n127.0.1.1\t{myhostname}.localdomain {myhostname}")
+            f"127.0.0.1\tlocalhost\n::1\t\tlocalhost\n127.0.1.1\t{myhostname}.localdomain {myhostname}")
 
 
 # def create_user():
