@@ -33,6 +33,9 @@ def generate_fstab():
 
 def chroot():
     subprocess.run("arch-chroot /mnt /bin/bash", shell=True)
+
+
+def install_packages():
     subprocess.run(
         "pacman --noconfirm -S grub dhcpcd iwd iw neovim intel-ucode sudo networkmanager efibootmgr dosfstools os-prober mtools", shell=True)
 
@@ -128,7 +131,7 @@ def main():
     # set_locals()
     # configure_network()
     # create_user()
-    chroot()
+    install_packages()
 
 
 if __name__ == "__main__":
