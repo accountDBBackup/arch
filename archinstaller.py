@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 
 def welcome():
@@ -21,7 +22,7 @@ def install_arch_essentails():
     choice = int(
         input("Chose a kernel:\n (1) linux\n(2) linux-lts\n(3) both")) - 1
     print(f"Installing: {kernels[choice].replace(' ', ' and ')}")
-    os.system(f"pacstrap /mnt base {kernels[choice]} linux-firmware")
+   subprocess.run(f"pacstrap /mnt base {kernels[choice]} linux-firmware", shell=True)
 
 
 def generate_fstab():
@@ -29,41 +30,41 @@ def generate_fstab():
 
 
 def chroot():
-    os.system("arch-chroot /mnt /bin/bash")
-	os.system("pacman --noconfirm -S grub dhcpcd iwd id neovim intel-ucode sudo networkmanager efibootmgr dosfstools os-prober mtools")
+    subprocess.run("arch-chroot /mnt /bin/bash", shell=True)
+    subprocess.run(
+        "pacman --noconfirm -S grub dhcpcd iwd id neovim intel-ucode sudo networkmanager efibootmgr dosfstools os-prober mtools", shell=True)
 
 
 def set_time_zone():
-	continents = [
-		"Africa",
-		"America",
-		"Antarctica",
-		"Arctic",
-		"Asia",
-		"Atlantic",
-		"Australia",
-		"Europe"
-	]
+    continents = [
+        "Africa",
+        "America",
+        "Antarctica",
+        "Arctic",
+        "Asia",
+        "Atlantic",
+        "Australia",
+        "Europe"
+    ]
 
-	while not ((continent := input("Please enter a valid continent name: ")) in continents):
-		pass
+    while not ((continent := input("Please enter a valid continent name: ")) in continents):
+        pass
 
-	cities = os.listdir(f"/usr/share/zoneinfo/{continent}")
+    cities = os.listdir(f"/usr/share/zoneinfo/{continent}")
 
-	print(f"Available cities in {continent}:")
-	for i, c in enumerate(cities):
-		if i % 5 == 0 and i != 0:
-			print(c)
-		else:
-			print(c.ljust(10, " "), end="\t")
+    print(f"Available cities in {continent}:")
+    for i, c in enumerate(cities):
+        if i % 5 == 0 and i != 0:
+            print(c)
+        else:
+            print(c.ljust(10, " "), end="\t")
 
-	print()
-	while not((city := input("Please enter a valid city name: ")) in cities):
-		pass
+    print()
+    while not((city := input("Please enter a valid city name: ")) in cities):
+        pass
 
-	zone_info = f"/usr/share/zoneinfo/{continent}/{city}"
-	os.system(f"ln -sf {zone_info} /etc/localtime")
-    os.system("hwclock --systohc")
+    zone_info = f"/usr/share/zoneinfo/{continent}/{city}"
+    subprocess.run(f"ln -sf {zone_info} /etc/localtime")
 
 
 def set_locals():
@@ -74,45 +75,45 @@ def set_locals():
         local_file.write("LANG=en_US.UTF-8")
 
 
-def configure_network():
-    myhostname = input("Enter a hostname: ")
-    with open("/etc/hostname", "w+") as hostname:
-        hostname.write(myhostname)
+# def configure_network():
+#     myhostname = input("Enter a hostname: ")
+#     with open("/etc/hostname", "w+") as hostname:
+#         hostname.write(myhostname)
 
-    with open("/etc/hosts", "w+") as hosts:
-        hosts.write(
-            "127.0.0.1\tlocalhost\n::1\tlocalhost\n127.0.1.1\t{myhostname}.localdomain {myhostname}")
+#     with open("/etc/hosts", "w+") as hosts:
+#         hosts.write(
+#             "127.0.0.1\tlocalhost\n::1\tlocalhost\n127.0.1.1\t{myhostname}.localdomain {myhostname}")
 
 
-def create_user():
-	print("Select a root password!")
-	os.system("passwd")
-    new_user = input("Please enter name for the new user: ")
-    print("Creating user {new_user}...")
-    os.system("useradd -m {new_user}")
-    os.system("passwd {new_user}")
-    print("Setting the group permissions for the user `{new_user}`...")
-    os.system("usermod -aG wheel,audio,storage,optical,video {new_user}")
+# def create_user():
+# 	print("Select a root password!")
+# 	os.system("passwd")
+#     new_user = input("Please enter name for the new user: ")
+#     print("Creating user {new_user}...")
+#     os.system("useradd -m {new_user}")
+#     os.system("passwd {new_user}")
+#     print("Setting the group permissions for the user `{new_user}`...")
+#     os.system("usermod -aG wheel,audio,storage,optical,video {new_user}")
 
-def install_bootloader():
-	os.system("grub-install --target=x86_64-efi --bootloader-id=grub_uefi --recheck")	
-	print("Creating grub config file...")
-	os.system("grub-mkconfig -o /boot/grub/grub.cfg")
+# def install_bootloader():
+# 	os.system("grub-install --target=x86_64-efi --bootloader-id=grub_uefi --recheck")
+# 	print("Creating grub config file...")
+# 	os.system("grub-mkconfig -o /boot/grub/grub.cfg")
 
-def finish():
-	print("Starting NetworkManager service...")	
-	os.system("systemctl enable NetworkManager")
-	os.system("systemctl start NetworkManager")
-	os.system("exit")
-	print("Rebooting now..")
-	os.system("reboot now")
-	
+# def finish():
+# 	print("Starting NetworkManager service...")
+# 	os.system("systemctl enable NetworkManager")
+# 	os.system("systemctl start NetworkManager")
+# 	os.system("exit")
+# 	print("Rebooting now..")
+# 	os.system("reboot now")
+
 def main():
-    welcome()i
-    format_disks()
-    mount_partitions()
-    install_arch_essentails()
-
+    # welcome()
+    # format_disks()
+    # mount_partitions()
+    # install_arch_essentails()
+	set_time_zone()
 
 if __name__ == "__main__":
     main()
