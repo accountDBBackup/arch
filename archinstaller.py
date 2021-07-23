@@ -34,7 +34,7 @@ def generate_fstab():
 def chroot():
     subprocess.run("arch-chroot /mnt /bin/bash", shell=True)
     subprocess.run(
-        "pacman --noconfirm -S grub dhcpcd iwd id neovim intel-ucode sudo networkmanager efibootmgr dosfstools os-prober mtools", shell=True)
+        "pacman --noconfirm -S grub dhcpcd iwd iw neovim intel-ucode sudo networkmanager efibootmgr dosfstools os-prober mtools", shell=True)
 
 
 def set_time_zone():
