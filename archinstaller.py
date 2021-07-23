@@ -22,7 +22,8 @@ def install_arch_essentails():
     choice = int(
         input("Chose a kernel:\n (1) linux\n(2) linux-lts\n(3) both")) - 1
     print(f"Installing: {kernels[choice].replace(' ', ' and ')}")
-   subprocess.run(f"pacstrap /mnt base {kernels[choice]} linux-firmware", shell=True)
+    subprocess.run(
+        f"pacstrap /mnt base {kernels[choice]} linux-firmware", shell=True)
 
 
 def generate_fstab():
@@ -113,7 +114,8 @@ def main():
     # format_disks()
     # mount_partitions()
     # install_arch_essentails()
-	set_time_zone()
+    set_time_zone()
+
 
 if __name__ == "__main__":
     main()
