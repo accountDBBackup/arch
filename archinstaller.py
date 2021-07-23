@@ -95,14 +95,15 @@ def configure_network():
 
 
 def create_user():
-	print("Select a root password!")
-	subprocess.run("passwd", shell=True)
-	new_user = input("Please enter name for the new user: ")
+    print("Select a root password!")
+    subprocess.run("passwd", shell=True)
+    new_user = input("Please enter name for the new user: ")
     print(f"Creating user {new_user}...")
     subprocess.run("useradd -m {new_user}", shell=True)
     subprocess.run("passwd {new_user}", shell=True)
     print("Setting the group permissions for the user `{new_user}`...")
-    os.system("usermod -aG wheel,audio,storage,optical,video {new_user}")
+    subprocess.run(
+        "usermod -aG wheel,audio,storage,optical,video {new_user}", shell=True)
 
 # def install_bootloader():
 # 	os.system("grub-install --target=x86_64-efi --bootloader-id=grub_uefi --recheck")
@@ -117,6 +118,7 @@ def create_user():
 # 	print("Rebooting now..")
 # 	os.system("reboot now")
 
+
 def main():
     # welcome()
     # format_disks()
@@ -125,7 +127,7 @@ def main():
     # set_time_zone()
     # set_locals()
     # configure_network()
-	create_user()
+    create_user()
 
 
 if __name__ == "__main__":
