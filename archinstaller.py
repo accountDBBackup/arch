@@ -94,15 +94,15 @@ def configure_network():
             f"127.0.0.1\tlocalhost\n::1\t\tlocalhost\n127.0.1.1\t{myhostname}.localdomain {myhostname}")
 
 
-# def create_user():
-# 	print("Select a root password!")
-# 	os.system("passwd")
-#     new_user = input("Please enter name for the new user: ")
-#     print("Creating user {new_user}...")
-#     os.system("useradd -m {new_user}")
-#     os.system("passwd {new_user}")
-#     print("Setting the group permissions for the user `{new_user}`...")
-#     os.system("usermod -aG wheel,audio,storage,optical,video {new_user}")
+def create_user():
+	print("Select a root password!")
+	subprocess.run("passwd", shell=True)
+	new_user = input("Please enter name for the new user: ")
+    print(f"Creating user {new_user}...")
+    subprocess.run("useradd -m {new_user}", shell=True)
+    subprocess.run("passwd {new_user}", shell=True)
+    print("Setting the group permissions for the user `{new_user}`...")
+    os.system("usermod -aG wheel,audio,storage,optical,video {new_user}")
 
 # def install_bootloader():
 # 	os.system("grub-install --target=x86_64-efi --bootloader-id=grub_uefi --recheck")
@@ -124,7 +124,8 @@ def main():
     # install_arch_essentails()
     # set_time_zone()
     # set_locals()
-    configure_network()
+    # configure_network()
+	create_user()
 
 
 if __name__ == "__main__":
