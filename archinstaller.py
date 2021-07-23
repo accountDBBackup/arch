@@ -99,11 +99,11 @@ def create_user():
     subprocess.run("passwd", shell=True)
     new_user = input("Please enter name for the new user: ")
     print(f"Creating user {new_user}...")
-    subprocess.run("useradd -m {new_user}", shell=True)
-    subprocess.run("passwd {new_user}", shell=True)
-    print("Setting the group permissions for the user `{new_user}`...")
+    subprocess.run(f"useradd -m {new_user}", shell=True)
+    subprocess.run(f"passwd {new_user}", shell=True)
+    print(f"Setting the group permissions for the user `{new_user}`...")
     subprocess.run(
-        "usermod -aG wheel,audio,storage,optical,video {new_user}", shell=True)
+        f"usermod -aG wheel,audio,storage,optical,video {new_user}", shell=True)
 
 # def install_bootloader():
 # 	os.system("grub-install --target=x86_64-efi --bootloader-id=grub_uefi --recheck")
