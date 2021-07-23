@@ -66,6 +66,7 @@ def set_time_zone():
 
     zone_info = f"/usr/share/zoneinfo/{continent}/{city}"
     subprocess.run(f"ln -sf {zone_info} /etc/localtime", shell=True)
+    subprocess.run("hwclock --systohc", shell=True)
 
 
 def set_locals():
