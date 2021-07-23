@@ -82,14 +82,16 @@ def set_locals():
         local_file.write("LANG=en_US.UTF-8")
 
 
-# def configure_network():
-#     myhostname = input("Enter a hostname: ")
-#     with open("/etc/hostname", "w+") as hostname:
-#         hostname.write(myhostname)
+def configure_network():
+    myhostname = input("Enter a hostname: ")
+    print("Creating `/etc/hostname` file...")
+    with open("/etc/hostname", "w+") as hostname:
+        hostname.write(myhostname)
 
-#     with open("/etc/hosts", "w+") as hosts:
-#         hosts.write(
-#             "127.0.0.1\tlocalhost\n::1\tlocalhost\n127.0.1.1\t{myhostname}.localdomain {myhostname}")
+    print("Editing the `/etc/hosts` file...")
+    with open("/etc/hosts", "w+") as hosts:
+        hosts.write(
+            "127.0.0.1\tlocalhost\n::1\tlocalhost\n127.0.1.1\t{myhostname}.localdomain {myhostname}")
 
 
 # def create_user():
@@ -121,7 +123,8 @@ def main():
     # mount_partitions()
     # install_arch_essentails()
     # set_time_zone()
-    set_locals()
+    # set_locals()
+    configure_network()
 
 
 if __name__ == "__main__":
