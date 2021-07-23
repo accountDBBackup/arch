@@ -108,10 +108,12 @@ def create_user():
     subprocess.run(
         f"usermod -aG wheel,audio,storage,optical,video {new_user}", shell=True)
 
-# def install_bootloader():
-# 	os.system("grub-install --target=x86_64-efi --bootloader-id=grub_uefi --recheck")
-# 	print("Creating grub config file...")
-# 	os.system("grub-mkconfig -o /boot/grub/grub.cfg")
+
+def install_bootloader():
+    subprocess.run(
+        "grub-install --target=x86_64-efi --bootloader-id=grub_uefi --recheck", shell=True)
+    print("Creating grub config file...")
+    subprocess.run("grub-mkconfig -o /boot/grub/grub.cfg", shell=True)
 
 # def finish():
 # 	print("Starting NetworkManager service...")
@@ -132,6 +134,7 @@ def main():
     # configure_network()
     # create_user()
     install_packages()
+    install_bootloader()
 
 
 if __name__ == "__main__":
