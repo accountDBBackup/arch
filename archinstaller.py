@@ -127,7 +127,8 @@ def main():
     # set_time_zone()
     # set_locals()
     # configure_network()
-    create_user()
+    # create_user()
+    chroot()
 
 
 if __name__ == "__main__":
