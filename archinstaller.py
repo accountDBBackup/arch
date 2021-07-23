@@ -1,5 +1,6 @@
 import os
 import subprocess
+import fileinput
 
 
 def welcome():
@@ -27,7 +28,7 @@ def install_arch_essentails():
 
 
 def generate_fstab():
-    os.system("genfstab -U /mnt >> /mnt/etc/fstab")
+    subprocess.run("genfstab -U /mnt >> /mnt/etc/fstab", shell=True)
 
 
 def chroot():
@@ -71,7 +72,11 @@ def set_time_zone():
 
 def set_locals():
     print("Uncommenting `en_US.UTF-8 UTF-8` line at `/etc/locale.gen`.")
-    os.system("locale-gen")
+    with fileinput.input("/etc/locale.gen", inplace=True) as f:
+        for line in f:
+            new_line = line.replace("#en_US.UTF-8 UTF-8", "en_US.UTF-8 UTF-8")
+            print(new_line, end="")
+    subprocess.run("locale-gen", shell=True)
     print("Creating `/etc/locale.conf` file to set locals...")
     with open("/etc/locale.conf", "w+") as local_file:
         local_file.write("LANG=en_US.UTF-8")
@@ -115,7 +120,8 @@ def main():
     # format_disks()
     # mount_partitions()
     # install_arch_essentails()
-    set_time_zone()
+    # set_time_zone()
+    set_locals()
 
 
 if __name__ == "__main__":
