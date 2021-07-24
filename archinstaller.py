@@ -117,7 +117,7 @@ def edit_sudoers():
     with fileinput.input("/etc/sudoers", inplace=True) as f:
         for line in f:
             new_line = line.replace(
-                "# \%wheel ALL=(ALL) ALL", "\%wheel ALL=(ALL) ALL")
+                "# %wheel ALL=(ALL) ALL", "%wheel ALL=(ALL) ALL")
             print(new_line, end="")
 
 
