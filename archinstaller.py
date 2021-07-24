@@ -20,11 +20,14 @@ def mount_partitions():
 
 def install_arch_essentails():
     kernels = ["linux", "linux-lts", "linux linux-lts"]
-    choice = int(
-        input("Chose a kernel:\n (1) linux\n(2) linux-lts\n(3) both")) - 1
-    print(f"Installing: {kernels[choice].replace(' ', ' and ')}")
+    while not ((choice :=
+                input("\t(1) linux\n\t(2) linux-lts\n\t(3) both\nChose a kernel: ")) in [str(i) for i in range(1, 4)]):
+        pass
+
+    choice = int(choice)
+    print(f"Installing: {kernels[choice-1].replace(' ', ' and ')}")
     subprocess.run(
-        f"pacstrap /mnt base {kernels[choice]} linux-firmware", shell=True)
+        f"pacstrap /mnt base {kernels[choice -1]} linux-firmware", shell=True)
 
 
 def generate_fstab():
@@ -109,19 +112,28 @@ def create_user():
         f"usermod -aG wheel,audio,storage,optical,video {new_user}", shell=True)
 
 
+def edit_sudoers():
+    print("Editing sudoers file...")
+    with fileinput.input("/etc/sudoers", inplace=True) as f:
+        for line in f:
+            new_line = line.replace(
+                "# \%wheel ALL=(ALL) ALL", "\%wheel ALL=(ALL) ALL")
+            print(new_line, end="")
+
+
 def install_bootloader():
     subprocess.run(
         "grub-install --target=x86_64-efi --bootloader-id=grub_uefi --recheck", shell=True)
     print("Creating grub config file...")
     subprocess.run("grub-mkconfig -o /boot/grub/grub.cfg", shell=True)
 
-# def finish():
-# 	print("Starting NetworkManager service...")
-# 	os.system("systemctl enable NetworkManager")
-# 	os.system("systemctl start NetworkManager")
-# 	os.system("exit")
-# 	print("Rebooting now..")
-# 	os.system("reboot now")
+
+def finish():
+    print("Starting NetworkManager service...")
+    subprocess.run("systemctl enable --now NetworkManager", shell=True)
+    subprocess.run("exit")
+    print("Rebooting now...")
+    subprocess.run("reboot now", shell=True)
 
 
 def main():
@@ -133,8 +145,9 @@ def main():
     # set_locals()
     # configure_network()
     # create_user()
-    install_packages()
-    install_bootloader()
+    # install_packages()
+    # install_bootloader()
+    edit_sudoers()
 
 
 if __name__ == "__main__":
