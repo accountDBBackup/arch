@@ -1,63 +1,16 @@
+from commands import CommandExecuter
 import os
-import subprocess
 import fileinput
 import pwd
 
 
-class CommandExecuter():
-	def __init__(self, cmd:str):
-		_cmd = cmd
-
-	def _execute(self):
-		subprocess.run(self._cmd, shell=True)
-		
-
-
-
-def welcome():
-    print("Welcome to to the Arch Installer!")
-    system_clock_sync = "timedatectl set-ntp true"
-    print(f"Running `{system_clock_sync}` command to sync the system clock!")
-    subprocess.run(system_clock_sync, shell=True)
-
-
-def format_disks():
-    pass
-
-
-def mount_partitions():
-    pass
-
-
-def update_mirrors():
-    print("Refreshing mirrorlist...")
-    subprocess.run(
-        "reflector --latest 30 --sort rate --save /etc/pacman.d/mirrorlist", shell=True)
-
-
-def install_arch_essentails():
-    kernels = ["linux", "linux-lts", "linux linux-lts"]
-    while not ((choice :=
-                input("\t(1) linux\n\t(2) linux-lts\n\t(3) both\nChose a kernel: ")) in [1, 2, 3]):
-        pass
-
-    choice = int(choice)
-    print(f"Installing: {kernels[choice-1].replace(' ', ' and ')}")
-    subprocess.run(
-        f"pacstrap /mnt base {kernels[choice -1]} linux-firmware", shell=True)
-
-
-def generate_fstab():
-    subprocess.run("genfstab -U /mnt >> /mnt/etc/fstab", shell=True)
-
-
-def chroot():
-    subprocess.run("arch-chroot /mnt /bin/bash", shell=True)
+def is_uefi() -> bool:
+    return os.path.isdir('/sys/firmware/efi')
 
 
 def install_packages():
-    subprocess.run(
-        "pacman --noconfirm --needed -S grub dhcpcd iwd iw neovim intel-ucode sudo networkmanager efibootmgr dosfstools os-prober mtools", shell=True)
+    CommandExecuter(
+        "pacman --noconfirm --needed -S grub dhcpcd iwd iw neovim intel-ucode sudo networkmanager efibootmgr dosfstools os-prober mtools")
 
 
 def set_time_zone():
@@ -89,8 +42,8 @@ def set_time_zone():
         pass
 
     zone_info = f"/usr/share/zoneinfo/{continent}/{city}"
-    subprocess.run(f"ln -sf {zone_info} /etc/localtime", shell=True)
-    subprocess.run("hwclock --systohc", shell=True)
+    CommandExecuter(f"ln -sf {zone_info} /etc/localtime")
+    CommandExecuter("hwclock --systohc")
 
 
 def set_locals():
@@ -99,7 +52,7 @@ def set_locals():
         for line in f:
             new_line = line.replace("#en_US.UTF-8 UTF-8", "en_US.UTF-8 UTF-8")
             print(new_line, end="")
-    subprocess.run("locale-gen", shell=True)
+    CommandExecuter("locale-gen")
     print("Creating `/etc/locale.conf` file to set locals...")
     with open("/etc/locale.conf", "w+") as local_file:
         local_file.write("LANG=en_US.UTF-8")
@@ -118,8 +71,8 @@ def configure_network():
 
 
 def check_password_is_set(user: str) -> bool:
-    stdout = subprocess.run(
-        f"passwd --status {user}", shell=True, capture_output=True, text=True).stdout.split(" ")
+    stdout = CommandExecuter(
+        f"passwd --status {user}").stdout.split(" ")
     return stdout[1] == "P"
 
 
@@ -137,23 +90,23 @@ def create_user(user: str):
         if check_password_is_set(user):
             pass
         else:
-            subprocess.run(f"passwd {user}", shell=True)
+            CommandExecuter(f"passwd {user}")
 
     else:
         print(f"Creating user {user}...")
-        subprocess.run(f"useradd -m {user}", shell=True)
-        subprocess.run(f"passwd {user}", shell=True)
+        CommandExecuter(f"useradd -m {user}")
+        CommandExecuter(f"passwd {user}")
 
 
 def user_operations():
     if not check_password_is_set("root"):
         print("Select a root password!")
-        subprocess.run("passwd", shell=True)
+        CommandExecuter("passwd")
     new_user = input("Please enter name for the new user: ")
     create_user(new_user)
     print(f"Setting the group permissions for the user `{new_user}`...")
-    subprocess.run(
-        f"usermod -aG wheel,audio,storage,optical,video {new_user}", shell=True)
+    CommandExecuter(
+        f"usermod -aG wheel,audio,storage,optical,video {new_user}")
 
 
 def edit_sudoers():
@@ -166,23 +119,27 @@ def edit_sudoers():
 
 
 def install_bootloader():
-    subprocess.run(
-        "grub-install --target=x86_64-efi --bootloader-id=grub_uefi --recheck", shell=True)
+	if is_uefi():
+		CommandExecuter(
+			"grub-install --target=x86_64-efi --bootloader-id=grub_uefi --recheck")
+	else:
+		CommandExecuter("grub-install /dev/sda")
+
     print("Creating grub config file...")
-    subprocess.run("grub-mkconfig -o /boot/grub/grub.cfg", shell=True)
+    CommandExecuter("grub-mkconfig -o /boot/grub/grub.cfg")
 
 
 def finish():
     print("Starting NetworkManager service...")
-    subprocess.run("systemctl enable --now NetworkManager", shell=True)
-    subprocess.run("exit")
-    print("Rebooting now...")
-    subprocess.run("reboot now", shell=True)
+    CommandExecuter("systemctl enable --now NetworkManager")
+    CommandExecuter("exit")
 
 
 def main():
-    create_user("kerem")
-
-
-if __name__ == "__main__":
-    main()
+    install_packages()
+    set_time_zone()
+    set_locals()
+    configure_network()
+    user_operations()
+    install_bootloader()
+    finish()
