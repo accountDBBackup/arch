@@ -48,8 +48,9 @@ def set_timezone() -> None:
     while not ((continent := input("Please enter a valid continent name(Enter for default values): ")) in continents):
         pass
 
-
-	if not continent: set_default_timezone()
+    if not continent:
+        set_default_timezone()
+        return
 
     cities = os.listdir(f"/usr/share/zoneinfo/{continent}")
 
