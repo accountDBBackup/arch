@@ -49,7 +49,7 @@ def set_timezone() -> None:
         pass
 
 
-	if continent == "":
+	if not continent:
 		set_default_timezone()
 		return
 
