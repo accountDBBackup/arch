@@ -2,6 +2,7 @@ from commands import CommandExecuter
 import os
 import fileinput
 import pwd
+from getpass import getpass
 
 
 def is_uefi() -> bool:
@@ -10,29 +11,32 @@ def is_uefi() -> bool:
 
 def install_packages() -> None:
     packages = [
-		"grub"
-		"dhcpcd"
-		"iwd"
-		"iw"
-		"neovim"
-		"intel-ucode"
-		"sudo"
-		"networkmanager"
-		"efibootmgr"
-		"dosfstools"
-		"os-prober"
-		"mtools"
-]
+        "grub"
+        "dhcpcd"
+        "iwd"
+        "iw"
+        "neovim"
+        "intel-ucode"
+        "sudo"
+        "networkmanager"
+        "efibootmgr"
+        "dosfstools"
+        "os-prober"
+        "mtools"
+    ]
 
     CommandExecuter(
         f"pacman --noconfirm --needed -S {' '.join(packages)}")
 
 
 def set_default_timezone():
-    CommandExecuter(f"ln -sf /usr/share/zoneinfo/Europe/Istanbul /etc/localtime")
+    CommandExecuter(
+        "ln -sf /usr/share/zoneinfo/Europe/Istanbul /etc/localtime")
     CommandExecuter("hwclock --systohc")
 
+
 def set_timezone() -> None:
+
     continents = [
         "Africa",
         "America",
@@ -42,7 +46,7 @@ def set_timezone() -> None:
         "Atlantic",
         "Australia",
         "Europe",
-		""
+        ""
     ]
 
     while not ((continent := input("Please enter a valid continent name(Enter for default values): ")) in continents):
@@ -65,8 +69,8 @@ def set_timezone() -> None:
     while not((city := input("Please enter a valid city name: ")) in cities):
         pass
 
-    zone_info = f"/usr/share/zoneinfo/{continent}/{city}"
-    CommandExecuter(f"ln -sf {zone_info} /etc/localtime")
+    zoneinfo = f"/usr/share/zoneinfo/{continent}/{city}"
+    CommandExecuter(f"ln -sf {zoneinfo} /etc/localtime")
     CommandExecuter("hwclock --systohc")
 
 
@@ -92,52 +96,6 @@ def configure_network() -> None:
     with open("/etc/hosts", "w+") as hosts_file:
         hosts_file.write(
             f"127.0.0.1\tlocalhost\n::1\t\tlocalhost\n127.0.1.1\t{hostname}.localdomain {hostname}")
-
-
-def check_password_is_set(username: str) -> bool:
-    stdout = CommandExecuter(
-        f"passwd --status {username}").result.split(" ")
-    return stdout[1] == "P"
-
-
-def check_user_exists(username: str) -> bool:
-    try:
-        pwd.getpwnam(username)
-    except KeyError:
-        return False
-
-    return True
-
-
-def create_user(username: str) -> None:
-    if check_user_exists(username):
-        if not check_password_is_set(username):
-            CommandExecuter(f"passwd {username}")
-
-    else:
-        print(f"Creating user {username}...")
-        CommandExecuter(f"useradd -m {username}")
-        CommandExecuter(f"passwd {username}")
-
-
-def user_operations() -> None:
-    if not check_password_is_set("root"):
-        print("Select a root password:", end="")
-        CommandExecuter("passwd")
-    username = input("Please enter name for the new user: ")
-    create_user(username)
-    print(f"Setting the group permissions for the user `{username}`...")
-    CommandExecuter(
-        f"usermod -aG wheel,audio,storage,optical,video {username}")
-
-
-def edit_sudoers() -> None:
-    print("Editing sudoers file...")
-    with fileinput.input("/etc/sudoers", inplace=True) as f:
-        for line in f:
-            new_line = line.replace(
-                "# %wheel ALL=(ALL) ALL", "%wheel ALL=(ALL) ALL")
-            print(new_line, end="")
 
 
 def install_bootloader() -> None:
