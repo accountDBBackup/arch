@@ -49,9 +49,7 @@ def set_timezone() -> None:
         pass
 
 
-	if not continent:
-		set_default_timezone()
-		return
+	if not continent: set_default_timezone()
 
     cities = os.listdir(f"/usr/share/zoneinfo/{continent}")
 
