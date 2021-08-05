@@ -48,6 +48,7 @@ def set_timezone() -> None:
     while not ((continent := input("Please enter a valid continent name(Enter for default values): ")) in continents):
         pass
 
+
 	if continent == "":
 		set_default_timezone()
 		return
