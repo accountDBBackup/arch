@@ -8,12 +8,25 @@ def is_uefi() -> bool:
     return os.path.isdir('/sys/firmware/efi')
 
 
-def install_packages():
+def install_packages() -> None:
+    packages = ["grub"
+                "dhcpcd"
+                "iwd"
+                "iw"
+                "neovim"
+                "intel-ucode"
+                "sudo"
+                "networkmanager"
+                "efibootmgr"
+                "dosfstools"
+                "os-prober"
+                "mtools"]
+
     CommandExecuter(
-        "pacman --noconfirm --needed -S grub dhcpcd iwd iw neovim intel-ucode sudo networkmanager efibootmgr dosfstools os-prober mtools")
+        f"pacman --noconfirm --needed -S {' '.join(packages)}")
 
 
-def set_time_zone():
+def set_time_zone() -> None:
     continents = [
         "Africa",
         "America",
@@ -46,7 +59,7 @@ def set_time_zone():
     CommandExecuter("hwclock --systohc")
 
 
-def set_locals():
+def set_locals() -> None:
     print("Uncommenting `en_US.UTF-8 UTF-8` line at `/etc/locale.gen`.")
     with fileinput.input("/etc/locale.gen", inplace=True) as f:
         for line in f:
@@ -58,58 +71,56 @@ def set_locals():
         local_file.write("LANG=en_US.UTF-8")
 
 
-def configure_network():
-    myhostname = input("Enter a hostname: ")
+def configure_network() -> None:
+    hostname = input("Enter a hostname: ")
     print("Creating `/etc/hostname` file...")
-    with open("/etc/hostname", "w+") as hostname:
-        hostname.write(myhostname)
+    with open("/etc/hostname", "w+") as hostname_file:
+        hostname_file.write(hostname)
 
     print("Editing the `/etc/hosts` file...")
-    with open("/etc/hosts", "w+") as hosts:
-        hosts.write(
-            f"127.0.0.1\tlocalhost\n::1\t\tlocalhost\n127.0.1.1\t{myhostname}.localdomain {myhostname}")
+    with open("/etc/hosts", "w+") as hosts_file:
+        hosts_file.write(
+            f"127.0.0.1\tlocalhost\n::1\t\tlocalhost\n127.0.1.1\t{hostname}.localdomain {hostname}")
 
 
-def check_password_is_set(user: str) -> bool:
+def check_password_is_set(username: str) -> bool:
     stdout = CommandExecuter(
-        f"passwd --status {user}").stdout.split(" ")
+        f"passwd --status {username}").result.split(" ")
     return stdout[1] == "P"
 
 
-def check_user_exists(user: str) -> bool:
+def check_user_exists(username: str) -> bool:
     try:
-        pwd.getpwnam(user)
+        pwd.getpwnam(username)
     except KeyError:
         return False
 
     return True
 
 
-def create_user(user: str):
-    if check_user_exists(user):
-        if check_password_is_set(user):
-            pass
-        else:
-            CommandExecuter(f"passwd {user}")
+def create_user(username: str) -> None:
+    if check_user_exists(username):
+        if not check_password_is_set(username):
+            CommandExecuter(f"passwd {username}")
 
     else:
-        print(f"Creating user {user}...")
-        CommandExecuter(f"useradd -m {user}")
-        CommandExecuter(f"passwd {user}")
+        print(f"Creating user {username}...")
+        CommandExecuter(f"useradd -m {username}")
+        CommandExecuter(f"passwd {username}")
 
 
-def user_operations():
+def user_operations() -> None:
     if not check_password_is_set("root"):
         print("Select a root password!")
         CommandExecuter("passwd")
-    new_user = input("Please enter name for the new user: ")
-    create_user(new_user)
+    username = input("Please enter name for the new user: ")
+    create_user(username)
     print(f"Setting the group permissions for the user `{new_user}`...")
     CommandExecuter(
         f"usermod -aG wheel,audio,storage,optical,video {new_user}")
 
 
-def edit_sudoers():
+def edit_sudoers() -> None:
     print("Editing sudoers file...")
     with fileinput.input("/etc/sudoers", inplace=True) as f:
         for line in f:
@@ -118,24 +129,24 @@ def edit_sudoers():
             print(new_line, end="")
 
 
-def install_bootloader():
-	if is_uefi():
-		CommandExecuter(
-			"grub-install --target=x86_64-efi --bootloader-id=grub_uefi --recheck")
-	else:
-		CommandExecuter("grub-install /dev/sda")
+def install_bootloader() -> None:
+    if is_uefi():
+        opts = "--target=x86_64-efi --bootloader-id=grub_uefi --recheck"
+    else:
+        opts = "/dev/sda"
 
+    CommandExecuter(f"grub-install {opts}")
     print("Creating grub config file...")
     CommandExecuter("grub-mkconfig -o /boot/grub/grub.cfg")
 
 
-def finish():
+def finish() -> None:
     print("Starting NetworkManager service...")
     CommandExecuter("systemctl enable --now NetworkManager")
     CommandExecuter("exit")
 
 
-def main():
+def main() -> None:
     install_packages()
     set_time_zone()
     set_locals()

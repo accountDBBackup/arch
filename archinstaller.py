@@ -2,16 +2,7 @@ import os
 import subprocess
 import fileinput
 import pwd
-
-
-class CommandExecuter():
-	def __init__(self, cmd:str):
-		_cmd = cmd
-
-	def _execute(self):
-		subprocess.run(self._cmd, shell=True)
-		
-
+import afterchroot
 
 
 def welcome():
@@ -38,13 +29,13 @@ def update_mirrors():
 def install_arch_essentails():
     kernels = ["linux", "linux-lts", "linux linux-lts"]
     while not ((choice :=
-                input("\t(1) linux\n\t(2) linux-lts\n\t(3) both\nChose a kernel: ")) in [1, 2, 3]):
+    input("\t(1) linux\n\t(2) linux-lts\n\t(3) both\nChose a kernel: ")) in [1, 2, 3]):
         pass
 
     choice = int(choice)
-    print(f"Installing: {kernels[choice-1].replace(' ', ' and ')}")
+    print(f"Installing: {kernels[choice - 1].replace(' ', ' and ')}")
     subprocess.run(
-        f"pacstrap /mnt base {kernels[choice -1]} linux-firmware", shell=True)
+        f"pacstrap /mnt base {kernels[choice - 1]} linux-firmware", shell=True)
 
 
 def generate_fstab():
@@ -57,131 +48,12 @@ def chroot():
 
 def install_packages():
     subprocess.run(
-        "pacman --noconfirm --needed -S grub dhcpcd iwd iw neovim intel-ucode sudo networkmanager efibootmgr dosfstools os-prober mtools", shell=True)
+        "pacman --noconfirm --needed -S grub dhcpcd iwd iw neovim intel-ucode sudo networkmanager efibootmgr dosfstools os-prober mtools",
+        shell=True)
 
 
-def set_time_zone():
-    continents = [
-        "Africa",
-        "America",
-        "Antarctica",
-        "Arctic",
-        "Asia",
-        "Atlantic",
-        "Australia",
-        "Europe"
-    ]
-
-    while not ((continent := input("Please enter a valid continent name: ")) in continents):
-        pass
-
-    cities = os.listdir(f"/usr/share/zoneinfo/{continent}")
-
-    print(f"Available cities in the {continent}:")
-    for i, c in enumerate(cities):
-        if i % 5 == 4 and i != 0:
-            print(c)
-        else:
-            print(c.ljust(10, " "), end="\t")
-
-    print()
-    while not((city := input("Please enter a valid city name: ")) in cities):
-        pass
-
-    zone_info = f"/usr/share/zoneinfo/{continent}/{city}"
-    subprocess.run(f"ln -sf {zone_info} /etc/localtime", shell=True)
-    subprocess.run("hwclock --systohc", shell=True)
-
-
-def set_locals():
-    print("Uncommenting `en_US.UTF-8 UTF-8` line at `/etc/locale.gen`.")
-    with fileinput.input("/etc/locale.gen", inplace=True) as f:
-        for line in f:
-            new_line = line.replace("#en_US.UTF-8 UTF-8", "en_US.UTF-8 UTF-8")
-            print(new_line, end="")
-    subprocess.run("locale-gen", shell=True)
-    print("Creating `/etc/locale.conf` file to set locals...")
-    with open("/etc/locale.conf", "w+") as local_file:
-        local_file.write("LANG=en_US.UTF-8")
-
-
-def configure_network():
-    myhostname = input("Enter a hostname: ")
-    print("Creating `/etc/hostname` file...")
-    with open("/etc/hostname", "w+") as hostname:
-        hostname.write(myhostname)
-
-    print("Editing the `/etc/hosts` file...")
-    with open("/etc/hosts", "w+") as hosts:
-        hosts.write(
-            f"127.0.0.1\tlocalhost\n::1\t\tlocalhost\n127.0.1.1\t{myhostname}.localdomain {myhostname}")
-
-
-def check_password_is_set(user: str) -> bool:
-    stdout = subprocess.run(
-        f"passwd --status {user}", shell=True, capture_output=True, text=True).stdout.split(" ")
-    return stdout[1] == "P"
-
-
-def check_user_exists(user: str) -> bool:
-    try:
-        pwd.getpwnam(user)
-    except KeyError:
-        return False
-
-    return True
-
-
-def create_user(user: str):
-    if check_user_exists(user):
-        if check_password_is_set(user):
-            pass
-        else:
-            subprocess.run(f"passwd {user}", shell=True)
-
-    else:
-        print(f"Creating user {user}...")
-        subprocess.run(f"useradd -m {user}", shell=True)
-        subprocess.run(f"passwd {user}", shell=True)
-
-
-def user_operations():
-    if not check_password_is_set("root"):
-        print("Select a root password!")
-        subprocess.run("passwd", shell=True)
-    new_user = input("Please enter name for the new user: ")
-    create_user(new_user)
-    print(f"Setting the group permissions for the user `{new_user}`...")
-    subprocess.run(
-        f"usermod -aG wheel,audio,storage,optical,video {new_user}", shell=True)
-
-
-def edit_sudoers():
-    print("Editing sudoers file...")
-    with fileinput.input("/etc/sudoers", inplace=True) as f:
-        for line in f:
-            new_line = line.replace(
-                "# %wheel ALL=(ALL) ALL", "%wheel ALL=(ALL) ALL")
-            print(new_line, end="")
-
-
-def install_bootloader():
-    subprocess.run(
-        "grub-install --target=x86_64-efi --bootloader-id=grub_uefi --recheck", shell=True)
-    print("Creating grub config file...")
-    subprocess.run("grub-mkconfig -o /boot/grub/grub.cfg", shell=True)
-
-
-def finish():
-    print("Starting NetworkManager service...")
-    subprocess.run("systemctl enable --now NetworkManager", shell=True)
-    subprocess.run("exit")
-    print("Rebooting now...")
-    subprocess.run("reboot now", shell=True)
-
-
-def main():
-    create_user("kerem")
+def main() -> None:
+    afterchroot.main()
 
 
 if __name__ == "__main__":
