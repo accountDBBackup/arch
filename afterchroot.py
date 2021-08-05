@@ -9,24 +9,30 @@ def is_uefi() -> bool:
 
 
 def install_packages() -> None:
-    packages = ["grub"
-                "dhcpcd"
-                "iwd"
-                "iw"
-                "neovim"
-                "intel-ucode"
-                "sudo"
-                "networkmanager"
-                "efibootmgr"
-                "dosfstools"
-                "os-prober"
-                "mtools"]
+    packages = [
+		"grub"
+		"dhcpcd"
+		"iwd"
+		"iw"
+		"neovim"
+		"intel-ucode"
+		"sudo"
+		"networkmanager"
+		"efibootmgr"
+		"dosfstools"
+		"os-prober"
+		"mtools"
+]
 
     CommandExecuter(
         f"pacman --noconfirm --needed -S {' '.join(packages)}")
 
 
-def set_time_zone() -> None:
+def set_default_timezone()
+    CommandExecuter(f"ln -sf /usr/share/zoneinfo/Europe/Istanbul /etc/localtime")
+    CommandExecuter("hwclock --systohc")
+
+def set_timezone() -> None:
     continents = [
         "Africa",
         "America",
@@ -35,11 +41,16 @@ def set_time_zone() -> None:
         "Asia",
         "Atlantic",
         "Australia",
-        "Europe"
+        "Europe",
+		""
     ]
 
-    while not ((continent := input("Please enter a valid continent name: ")) in continents):
+    while not ((continent := input("Please enter a valid continent name(Enter for default values): ")) in continents):
         pass
+
+	if continent == "":
+		set_default_timezone()
+		return
 
     cities = os.listdir(f"/usr/share/zoneinfo/{continent}")
 
@@ -111,13 +122,13 @@ def create_user(username: str) -> None:
 
 def user_operations() -> None:
     if not check_password_is_set("root"):
-        print("Select a root password!")
+        print("Select a root password:", end="")
         CommandExecuter("passwd")
     username = input("Please enter name for the new user: ")
     create_user(username)
-    print(f"Setting the group permissions for the user `{new_user}`...")
+    print(f"Setting the group permissions for the user `{username}`...")
     CommandExecuter(
-        f"usermod -aG wheel,audio,storage,optical,video {new_user}")
+        f"usermod -aG wheel,audio,storage,optical,video {username}")
 
 
 def edit_sudoers() -> None:
@@ -148,7 +159,7 @@ def finish() -> None:
 
 def main() -> None:
     install_packages()
-    set_time_zone()
+    set_timezone()
     set_locals()
     configure_network()
     user_operations()

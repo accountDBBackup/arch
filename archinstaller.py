@@ -34,7 +34,7 @@ def install_arch_essentails():
     choice = int(choice)
     print(f"Installing: {kernels[choice-1].replace(' ', ' and ')}")
     subprocess.run(
-        f"pacstrap /mnt base {kernels[choice -1]} linux-firmware", shell=True)
+        f"pacstrap /mnt base {kernels[choice -1]} linux-firmware git python", shell=True)
 
 
 def generate_fstab():
