@@ -4,7 +4,6 @@ import fileinput
 import pwd
 import afterchroot
 
-
 def welcome():
     print("Welcome to to the Arch Installer!")
     system_clock_sync = "timedatectl set-ntp true"
@@ -29,13 +28,13 @@ def update_mirrors():
 def install_arch_essentails():
     kernels = ["linux", "linux-lts", "linux linux-lts"]
     while not ((choice :=
-    input("\t(1) linux\n\t(2) linux-lts\n\t(3) both\nChose a kernel: ")) in [1, 2, 3]):
+                input("\t(1) linux\n\t(2) linux-lts\n\t(3) both\nChose a kernel: ")) in [1, 2, 3]):
         pass
 
     choice = int(choice)
-    print(f"Installing: {kernels[choice - 1].replace(' ', ' and ')}")
+    print(f"Installing: {kernels[choice-1].replace(' ', ' and ')}")
     subprocess.run(
-        f"pacstrap /mnt base {kernels[choice - 1]} linux-firmware", shell=True)
+        f"pacstrap /mnt base {kernels[choice -1]} linux-firmware", shell=True)
 
 
 def generate_fstab():
@@ -45,15 +44,9 @@ def generate_fstab():
 def chroot():
     subprocess.run("arch-chroot /mnt /bin/bash", shell=True)
 
-
-def install_packages():
-    subprocess.run(
-        "pacman --noconfirm --needed -S grub dhcpcd iwd iw neovim intel-ucode sudo networkmanager efibootmgr dosfstools os-prober mtools",
-        shell=True)
-
-
-def main() -> None:
-    afterchroot.main()
+def main():
+	afterchroot.main()
+    
 
 
 if __name__ == "__main__":
