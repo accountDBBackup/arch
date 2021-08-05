@@ -28,7 +28,7 @@ def install_packages() -> None:
         f"pacman --noconfirm --needed -S {' '.join(packages)}")
 
 
-def set_default_timezone()
+def set_default_timezone():
     CommandExecuter(f"ln -sf /usr/share/zoneinfo/Europe/Istanbul /etc/localtime")
     CommandExecuter("hwclock --systohc")
 
